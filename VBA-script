@@ -21,6 +21,7 @@ Sub FormatSummaryTable()
     Range("K2:K5000,Q2:Q3").NumberFormat = "0.00%"
     Columns("I:Q").EntireColumn.AutoFit
     Range("P:P,I:I").ColumnWidth = 9
+    
 End Sub
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Sub stockAnalysis():
