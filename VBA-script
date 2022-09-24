@@ -1,0 +1,93 @@
+Sub FormatSummaryTable()
+
+'Format the summary table
+    Range("J2:J5000").Select
+    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, _
+        Formula1:="=0"
+    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+    With Selection.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = 5287936
+    End With
+    Selection.FormatConditions(1).StopIfTrue = False
+    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, _
+        Formula1:="=0"
+    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+    With Selection.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = 255
+    End With
+    Selection.FormatConditions(1).StopIfTrue = False
+    Range("K2:K5000,Q2:Q3").NumberFormat = "0.00%"
+    Columns("I:Q").EntireColumn.AutoFit
+    Range("P:P,I:I").ColumnWidth = 9
+End Sub
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Sub stockAnalysis():
+  
+'initialize variables
+Dim year_open As Double
+Dim Summary_Table_Row As Integer
+Dim lastRow As Integer
+
+'set up BONUS summary table only on the first sheet
+Sheets(1).Activate
+Cells(1, 16).Value = "Ticker"
+Cells(1, 17).Value = "Value"
+Cells(2, 15).Value = "Greatest % Increase"
+Cells(3, 15).Value = "Greatest % Decrease"
+Cells(3, 17).Value = 100
+Cells(4, 15).Value = "Greatest Total Volume"
+  
+For Each ws In Worksheets
+  ws.Activate
+  'Reset variables for each new worksheet
+  year_open = Cells(2, 3).Value
+  Summary_Table_Row = 2
+  lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+
+  'set up summary table
+  Range("i2", "l100").ClearContents
+  Cells(1, 9).Value = "Ticker"
+  Cells(1, 10).Value = "Yearly Change"
+  Cells(1, 11).Value = "Percent Change"
+  Cells(1, 12).Value = "Total Stock Volume"
+
+  For r = 2 To lastRow
+    
+    'increment vol_Total
+    Cells(Summary_Table_Row, 12).Value = Cells(Summary_Table_Row, 12).Value + Cells(r, 7).Value
+    
+    If Cells(r + 1, 1).Value <> Cells(r, 1).Value Then
+
+      Cells(Summary_Table_Row, 9).Value = Cells(r, 1).Value                 'ticker
+      Cells(Summary_Table_Row, 10).Value = Cells(r, 6).Value - year_open    'yearly change
+      Cells(Summary_Table_Row, 11).Value = _
+            Cells(Summary_Table_Row, 10).Value / year_open                  'percent change
+      
+      'check for new high records on first sheet
+      If Cells(Summary_Table_Row, 11).Value > Sheets(1).Cells(2, 17).Value Then
+        Sheets(1).Cells(2, 16).Value = Cells(Summary_Table_Row, 9).Value    'ticker
+        Sheets(1).Cells(2, 17).Value = Cells(Summary_Table_Row, 11).Value   'greatest % increase
+      End If
+      If Cells(Summary_Table_Row, 11).Value < Sheets(1).Cells(3, 17).Value Then
+        Sheets(1).Cells(3, 16).Value = Cells(Summary_Table_Row, 9).Value    'ticker
+        Sheets(1).Cells(3, 17).Value = Cells(Summary_Table_Row, 11).Value   'greatest % decrease
+      End If
+      If Cells(Summary_Table_Row, 12).Value > Sheets(1).Cells(4, 17).Value Then
+        Sheets(1).Cells(4, 16).Value = Cells(Summary_Table_Row, 9).Value    'ticker
+        Sheets(1).Cells(4, 17).Value = Cells(Summary_Table_Row, 12).Value   'max Total Volume
+      End If
+      
+      year_open = Cells(r + 1, 3).Value                    'new year_open for next ticker
+      Summary_Table_Row = Summary_Table_Row + 1            'go to next row for summary table
+      
+    End If
+  Next r
+  
+  Call FormatSummaryTable
+  Range("a1").Select
+  
+Next ws
+
+End Sub
